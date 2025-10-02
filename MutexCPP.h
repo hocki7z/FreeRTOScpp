@@ -38,9 +38,14 @@
 #define MUTEXCPP_H
 
 #include "FreeRTOScpp.h"
-
 #include "Lock.h"
+
+#if defined(ARDUINO_ARCH_ESP32)
+#include "freertos/semphr.h"
+#else
 #include "semphr.h"
+#endif /* defined(ARDUINO_ARCH_ESP32) */
+
 
 #if FREERTOSCPP_USE_NAMESPACE
 namespace FreeRTOScpp {

@@ -37,7 +37,13 @@
 #define QUEUECPP_H
 
 #include "FreeRTOScpp.h"
+
+#if defined(ARDUINO_ARCH_ESP32)
+#include "freertos/queue.h"
+#else
 #include "queue.h"
+#endif /* defined(ARDUINO_ARCH_ESP32) */
+
 
 #if FREERTOSCPP_USE_NAMESPACE
 namespace FreeRTOScpp {
@@ -346,6 +352,7 @@ public:
     if(name)
       vQueueAddToRegistry(this->queueHandle, name);
 #endif
+
 
   };
 private:

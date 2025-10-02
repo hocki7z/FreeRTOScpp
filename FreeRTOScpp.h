@@ -37,8 +37,13 @@
 #ifndef FREERTOSPP_FREERTOSCPP_H_
 #define FREERTOSPP_FREERTOSCPP_H_
 
+#if defined(ARDUINO_ARCH_ESP32)
+#include "Arduino.h"
+#include "freertos/task.h"
+#else
 #include "FreeRTOS.h"
-#include "task.h"		// For Version Numbers
+#include "task.h"
+#endif /* defined(ARDUINO_ARCH_ESP32) */
 
 /**
  * @def FREERTOSCPP_USE_CHRONO

@@ -37,7 +37,12 @@
 
 #include "FreeRTOScpp.h"
 
+#if defined(ARDUINO_ARCH_ESP32)
+#include <freertos/stream_buffer.h>
+#else
 #include "stream_buffer.h"
+#endif /* defined(ARDUINO_ARCH_ESP32) */
+
 
 #if FREERTOSCPP_USE_NAMESPACE
 namespace FreeRTOScpp {
@@ -156,7 +161,7 @@ public:
 };
 #endif
 
-#if FREERTOS_VERSION_ALL >= 11'001'000
+#if FREERTOS_VERSION_ALL >= 11001000
 // Version 11.1.0 added StraamBatchBuffer Varient
 
 /**

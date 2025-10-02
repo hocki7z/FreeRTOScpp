@@ -39,7 +39,12 @@
 
 #include "FreeRTOScpp.h"
 
+#if defined(ARDUINO_ARCH_ESP32)
+#include "freertos/message_buffer.h"
+#else
 #include "message_buffer.h"
+#endif /* defined(ARDUINO_ARCH_ESP32) */
+
 
 #if FREERTOSCPP_USE_NAMESPACE
 namespace FreeRTOScpp {

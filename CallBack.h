@@ -41,7 +41,13 @@
 #define FREERTOSPP_CALLBACK_H
 
 #include <FreeRTOScpp.h>
+
+#if defined(ARDUINO_ARCH_ESP32)
+#include <freertos/timers.h>
+#else
 #include <timers.h>
+#endif /* defined(ARDUINO_ARCH_ESP32) */
+
 #include <stdint.h>
 
 extern "C" {

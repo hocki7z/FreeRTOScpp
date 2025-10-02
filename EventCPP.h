@@ -38,7 +38,12 @@
 #define EVENTCPP_H
 
 #include "FreeRTOScpp.h"
+
+#if defined(ARDUINO_ARCH_ESP32)
+#include "freertos/event_groups.h"
+#else
 #include "event_groups.h"
+#endif /* defined(ARDUINO_ARCH_ESP32) */
 
 /**
  * @def EVENT_BITS

@@ -39,8 +39,15 @@
 #define FREERTOS_FREERTOSPP_TIMERCPP_H
 
 #include "FreeRTOScpp.h"
+
+#if defined(ARDUINO_ARCH_ESP32)
+#include "freertos/FreeRTOS.h"
+#include "freertos/timers.h"
+#else
 #include "FreeRTOS.h"
 #include "timers.h"
+#endif /* defined(ARDUINO_ARCH_ESP32) */
+
 
 #if FREERTOSCPP_USE_NAMESPACE
 namespace FreeRTOScpp {
