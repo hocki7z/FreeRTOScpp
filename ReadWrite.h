@@ -200,6 +200,11 @@ public:
 #endif
 protected:
     EventGroup      event;
+    
+#if defined(ARDUINO_ARCH_ESP32)
+    portMUX_TYPE    mutex = portMUX_INITIALIZER_UNLOCKED;
+#endif /* defined(ARDUINO_ARCH_ESP32) */
+
     /**
      * Count of Read Locks
      * 

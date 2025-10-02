@@ -117,7 +117,7 @@ public:
 #endif
 	bool		stopISR(portBASE_TYPE& waswoken) { return xTimerStopFromISR(timerHandle, &waswoken); }
 
-#if FREERTOS_VERSION >= 10'002'000
+#if FREERTOS_VERSION >= 10002000
 	void 		reload(bool reload) { vTimerSetReloadMode( timerHandle, reload); }
 #endif
 

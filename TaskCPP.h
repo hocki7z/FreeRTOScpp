@@ -94,7 +94,7 @@ enum TaskPriority {
  * 
  * Mostly for configMAX_PRIORITIES > 6
  */
-constexpr TaskPriority operator+(TaskPriority p, int offset) {
+inline TaskPriority operator+(TaskPriority p, int offset) {
 	configASSERT((static_cast<int>(p) + offset) >=  0);
 	configASSERT((static_cast<int>(p) + offset) <  configMAX_PRIORITIES);
 	return static_cast<TaskPriority>(static_cast<int>(p) + offset);
@@ -105,7 +105,7 @@ constexpr TaskPriority operator+(TaskPriority p, int offset) {
  * 
  * Mostly for configMAX_PRIORITIES > 6
  */
-constexpr TaskPriority operator-(TaskPriority p, int offset) {
+inline TaskPriority operator-(TaskPriority p, int offset) {
 	configASSERT((static_cast<int>(p) - offset) >=  0);
 	configASSERT((static_cast<int>(p) - offset) <  configMAX_PRIORITIES);
 	return static_cast<TaskPriority>(static_cast<int>(p) - offset);
@@ -329,7 +329,7 @@ public:
 	  	  	  	  	  	  {return xTaskNotifyAndQuery(taskHandle, value, act, &old); }
 	  bool 			notify_query_ISR(uint32_t value, eNotifyAction act, uint32_t &old, portBASE_TYPE& waswoken)
 	  	  	  	  	  	  {return xTaskNotifyAndQueryFromISR(taskHandle, value, act, &old, &waswoken); }
-#if FREERTOS_VERSION_ALL >= 10'004'000
+#if FREERTOS_VERSION_ALL >= 10004000
 	  bool 			notifyIndex(UBaseType_t idx, uint32_t value, eNotifyAction act)
 	  	  	  	  	  	  { return xTaskNotifyIndexed(taskHandle, idx, value, act); }
 	  bool 			notifyIndex_ISR(UBaseType_t idx, uint32_t value, eNotifyAction act, portBASE_TYPE& waswoken)
@@ -340,10 +340,10 @@ public:
 	  	  	  	  	  	  {return xTaskNotifyAndQueryIndexedFromISR(taskHandle, idx, value, act, &old, &waswoken); }
 #endif
 
-#if FREERTOS_VERSION_ALL >= 10'003'000
+#if FREERTOS_VERSION_ALL >= 10003000
 	  bool			notifyStateClear() { return xTaskNotifyStateClear(taskHandle); }
 	  uint32_t		notifyValueClear(uint32_t bits)	{ return ulTaskNotifyValueClear(taskHandle, bits); }
-#if FREERTOS_VERSION_ALL >= 10'004'000
+#if FREERTOS_VERSION_ALL >= 10004000
 	  bool			notifyStateClearIndex(UBaseType_t idx) { return xTaskNotifyStateClearIndexed(taskHandle, idx); }
 	  uint32_t		notifyValueClearIndex(UBaseType_t idx, uint32_t bits)	{ return ulTaskNotifyValueClearIndexed(taskHandle, idx, bits); }
 #endif
@@ -358,7 +358,7 @@ public:
 	  void 			give_ISR(portBASE_TYPE& waswoken)
 	  	  	  	  	  	  { vTaskNotifyGiveFromISR(taskHandle, &waswoken); }
 
-#if FREERTOS_VERSION_ALL >= 10'004'000
+#if FREERTOS_VERSION_ALL >= 10004000
 	  bool 			giveIndex(UBaseType_t idx) 	{ return xTaskNotifyGiveIndexed(taskHandle, idx); }
 	  void 			giveIndex_ISR(UBaseType_t idx, portBASE_TYPE& waswoken)
 	  	  	  	  	  	  { vTaskNotifyGiveIndexedFromISR(taskHandle, idx, &waswoken); }
@@ -373,7 +373,7 @@ public:
       static    uint32_t    wait(uint32_t clearEnter, uint32_t clearExit, uint32_t* value, Time_ms ms)
                          { return xTaskNotifyWait(clearEnter, clearExit, value, ms2ticks(ms)); }
 #endif
-#if FREERTOS_VERSION_ALL >= 10'004'000
+#if FREERTOS_VERSION_ALL >= 10004000
 	  static    uint32_t	waitIndex(UBaseType_t idx, uint32_t clearEnter, uint32_t clearExit = 0xFFFFFFFF, uint32_t* value = nullptr, TickType_t ticks = portMAX_DELAY)
 	  	  	  	  	  	 { return xTaskNotifyWaitIndexed(idx, clearEnter, clearExit, value, ticks); }
 #if FREERTOSCPP_USE_CHRONO
@@ -493,7 +493,7 @@ public:
 	 *
 	 */
   TaskS(char const*name, void (*taskfun)(void *), TaskPriority priority_,
-       unsigned portSHORT stackSize, void * myParm = nullptr) :
+       const uint32_t stackSize, void * myParm = nullptr) :
 	   TaskBase() {
 	    xTaskCreate(taskfun, name, stackSize, myParm, priority_, &taskHandle);
   }
@@ -542,7 +542,7 @@ public:
 	 * 
 	 * Change from previous API to support SMP mode where the previous trick won't work anymore.
 	 */
-  TaskClassS(char const*name, TaskPriority priority_, unsigned portSHORT stackDepth_=0) :
+  TaskClassS(char const*name, TaskPriority priority_, const uint32_t stackDepth_=0) :
     TaskS<stackDepth>(name, &taskcpp_task_thunk, priority_, static_cast<TaskClassBase*>(this))
   {
 	(void) stackDepth_;
@@ -579,7 +579,7 @@ public:
 	 * 
 	 * Change from previous API to support SMP mode where the previous trick won't work anymore.
 	 */
-  TaskClassS(char const*name, TaskPriority priority_, unsigned portSHORT stackDepth_) :
+  TaskClassS(char const*name, TaskPriority priority_, const uint32_t stackDepth_) :
     TaskS<0>(name, &taskcpp_task_thunk, priority_, stackDepth_, static_cast<TaskClassBase*>(this))
   {
 	// API CHANGE: We give if Scheduer not running, otherwise final constructor needs to give.

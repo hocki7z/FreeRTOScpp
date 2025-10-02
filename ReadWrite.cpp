@@ -40,6 +40,14 @@
 namespace FreeRTOScpp {
 #endif
 
+#if defined(ARDUINO_ARCH_ESP32)
+#define TASK_ENTER_CRITICAL     taskENTER_CRITICAL(&mutex)
+#define TASK_EXIT_CRITICAL      taskEXIT_CRITICAL(&mutex)
+#else
+#define TASK_ENTER_CRITICAL     taskEXIT_CRITICAL()
+#define TASK_EXIT_CRITICAL      taskEXIT_CRITICAL()
+#endif /* defined(ARDUINO_ARCH_ESP32) */
+
 /* 
 Different events we can be waiting for.
 Right now minimal, might be able to expand bits so less tasks get woken prematurely
@@ -73,14 +81,14 @@ ReadWriteLock::~ReadWriteLock() {
 bool ReadWriteLock::readLock(TickType_t wait) {
     TickType_t start = xTaskGetTickCount();
     while(1) {
-        taskENTER_CRITICAL();
+        TASK_ENTER_CRITICAL;
         if(readCount >= 0 && (int)uxTaskPriorityGet(nullptr) > writeReq) {
             // Lock is granted, record that.
             readCount++;
-            taskEXIT_CRITICAL();
+            TASK_EXIT_CRITICAL;
             return true;
         }
-        taskEXIT_CRITICAL();
+        TASK_EXIT_CRITICAL;
         TickType_t now = xTaskGetTickCount();
         if(now-start >= wait) {
             // Timed out. 
@@ -95,15 +103,15 @@ bool ReadWriteLock::reservedLock(TickType_t wait) {
     TickType_t start = xTaskGetTickCount();
     TaskHandle_t task = xTaskGetCurrentTaskHandle();
     while(1) {
-        taskENTER_CRITICAL();
+        TASK_ENTER_CRITICAL;
         if(readCount >= 0 && reserved == nullptr && (int)uxTaskPriorityGet(nullptr) > writeReq) {
             // Lock is granted, record that, reserve our ability to promote
             readCount++;
             reserved = task;
-            taskEXIT_CRITICAL();
+            TASK_EXIT_CRITICAL;
             return true;
         }
-        taskEXIT_CRITICAL();
+        TASK_EXIT_CRITICAL;
         TickType_t now = xTaskGetTickCount();
         if(now-start >= wait) {
             // Timed out. 
@@ -116,12 +124,12 @@ bool ReadWriteLock::reservedLock(TickType_t wait) {
 bool ReadWriteLock::requestReserved() {
     TaskHandle_t task = xTaskGetCurrentTaskHandle();
     bool flag = false;
-    taskENTER_CRITICAL();
+    TASK_ENTER_CRITICAL;
     if( readCount > 0 && reserved == nullptr) {
         reserved = task;
         flag = true;
     }
-    taskEXIT_CRITICAL();
+    TASK_EXIT_CRITICAL;
     return flag;
 }
 
@@ -144,7 +152,7 @@ bool ReadWriteLock::readUnlock() {
         // Signal read event as another task may be waiting on it. This might be able to be a different bit.
         event.set(read_bit);
     }
-    taskENTER_CRITICAL();
+    TASK_ENTER_CRITICAL;
     if (readCount > 0) {
         readCount--;
     } else {
@@ -154,7 +162,7 @@ bool ReadWriteLock::readUnlock() {
     if (readCount == 0) {
         reserved = nullptr;     // just for safety.
     }
-    taskEXIT_CRITICAL();
+    TASK_EXIT_CRITICAL;
     // Can be outside critical as false positive doesn't really hurt anything here.
     if (readCount == 0) {
         event.set(write_bit);
@@ -167,37 +175,37 @@ bool ReadWriteLock::writeLock(TickType_t wait) {
     TickType_t start = xTaskGetTickCount();
     int priority = uxTaskPriorityGet(nullptr);
     while(1) {
-        taskENTER_CRITICAL();
+        TASK_ENTER_CRITICAL;
         if (0 <= readCount && readCount <= (reserved == task)) {
             readCount = -1;
             writeReq = -1;
-            taskEXIT_CRITICAL();
+            TASK_EXIT_CRITICAL;
             return true;
         }
-        taskEXIT_CRITICAL();
+        TASK_EXIT_CRITICAL;
 
         TickType_t now = xTaskGetTickCount();
         if(now-start >= wait) {
             // clear writeReq if it might have been us.
 
-            taskENTER_CRITICAL();
+            TASK_ENTER_CRITICAL;
             if (writeReq == priority) {
                 writeReq = -1;
-                taskEXIT_CRITICAL();
+                TASK_EXIT_CRITICAL;
                 // We may have been blocking a reader, or removed another writers request.
                 event.set(read_bit|write_bit);
             } else {
-                taskEXIT_CRITICAL();
+                TASK_EXIT_CRITICAL;
             }
             return false;
         }
 
-        taskENTER_CRITICAL();
+        TASK_ENTER_CRITICAL;
         // Update request priority if we are higher
         if (writeReq < priority) {
             writeReq = priority;
         }
-        taskEXIT_CRITICAL();
+        TASK_EXIT_CRITICAL;
 
         event.wait(write_bit, true, true, 1);
     }
