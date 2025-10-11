@@ -114,7 +114,7 @@ public:
     MessageBuffer() :
         MessageBufferBase(
 #if( configSUPPORT_STATIC_ALLOCATION == 1 )
-            xMessageBufferCreateStatic(size, storage, msgBuff)
+            xMessageBufferCreateStatic(size, storage, &msgBuff)
 #else
             xMessageBufferCreate(size)
 #endif
