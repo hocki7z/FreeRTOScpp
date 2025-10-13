@@ -53,10 +53,6 @@
 
 #include "FreeRTOScpp.h"
 
-extern "C" {
-	extern void taskcpp_task_thunk(void*);
-}
-
 #if FREERTOSCPP_USE_NAMESPACE
 namespace FreeRTOScpp {
 #endif
@@ -509,12 +505,29 @@ class TaskClassBase {
 public:
 	TaskClassBase() {} 
     ~TaskClassBase() {}
+
+protected:
   /**
    * @brief task function.
    * The member function task needs to
    */
   virtual void task() = 0;
 
+  /**
+	* Thunk for FreeRTOS to C++ Task Wrapper
+	*/
+  static void taskcpp_task_thunk(void* parm) {
+	  TaskClassBase *myClass = static_cast<TaskClassBase*>(parm);
+	  TaskBase::take();
+	  myClass->task();
+#if INCLUDE_vTaskDelete
+	  vTaskDelete(nullptr);
+#else
+	  while(1) {
+        vTaskDelay(portMAX_DELAY);
+	  }
+#endif
+  }
 };
 
 /**
@@ -554,6 +567,7 @@ public:
 
   virtual ~TaskClassS() {}
 
+protected:
   /**
    * @brief task function.
    * The member function task needs to
@@ -590,6 +604,7 @@ public:
 
   virtual ~TaskClassS() {}
 
+protected:
   /**
    * @brief task function.
    * The member function task needs to
